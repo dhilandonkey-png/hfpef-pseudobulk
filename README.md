@@ -55,6 +55,36 @@ Rules taken from the paper:
 
 Make sure the matrix holds **raw counts**. If the portal only provides normalised values, the script stops and tells you so.
 
+## Quick start for the SCP3342 file
+
+The portal's `HFpEF_snRNAseq_single_cell_portal_withRawCounts_09.24.2026.h5ad` (48,866 nuclei x 36,601 genes) has:
+
+| role | column / layer |
+|---|---|
+| patient | `donor_id` (43) |
+| cell type | `original_cell_type` (the paper's 14 labels) |
+| group | `original_disease` (`hfpef` / `control`) |
+| covariates | `sex`, `biosample_id` (= pool, 8 values) |
+| raw counts | layers `raw_count_cellbender` (main analysis) and `raw_count_cellranger` (paper's concordance check) |
+
+`X` is normalised, so always pass `--layer`.
+
+```bash
+H5AD=~/Downloads/HFpEF_snRNAseq_single_cell_portal_withRawCounts_09.24.2026.h5ad
+
+python pseudobulk.py --h5ad "$H5AD" --layer raw_count_cellbender --out results_cellbender \
+    --donor-col donor_id --celltype-col original_cell_type --group-col original_disease \
+    --covariates sex biosample_id
+
+python de_pydeseq2.py results_cellbender --group-col original_disease \
+    --case hfpef --control control --covariates sex biosample_id
+# or, as in the paper:
+Rscript limma_voom.R results_cellbender original_disease hfpef control sex biosample_id
+```
+
+Repeat with `--layer raw_count_cellranger --out results_cellranger` to reproduce the paper's
+requirement that a gene be significant in the same direction in both matrices.
+
 ## 2. Install
 
 ```bash

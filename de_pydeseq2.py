@@ -20,7 +20,10 @@ from pydeseq2.ds import DeseqStats
 
 def run_de(counts_file: Path, meta_file: Path, group_col: str, case: str, control: str, covariates: list[str]):
     counts = pd.read_csv(counts_file, index_col=0).T  # samples x genes
-    meta = pd.read_csv(meta_file, index_col=0).loc[counts.index]
+    counts.index = counts.index.astype(str)
+    meta = pd.read_csv(meta_file, index_col=0)
+    meta.index = meta.index.astype(str)  # numeric donor ids (e.g. SCP3342's 1059) must match the counts header
+    meta = meta.loc[counts.index]
     covs = [c for c in covariates if meta[c].nunique() > 1]
     meta = meta[[group_col, *covs]].astype(str)
     meta = meta.rename(columns={group_col: "group"})

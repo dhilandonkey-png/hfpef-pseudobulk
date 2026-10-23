@@ -61,6 +61,21 @@ def read_mtx_dir(matrix: Path, barcodes: Path, features: Path) -> ad.AnnData:
     return adata
 
 
+def read_h5ad_layer(path: str, layer: str) -> ad.AnnData:
+    """Read obs, var and a single layer as X, skipping X and the other layers.
+
+    SCP3342's h5ad holds normalised X plus two raw-count layers; loading only
+    the one we need keeps memory to roughly a third.
+    """
+    import h5py
+    from anndata.io import read_elem
+
+    with h5py.File(path, "r") as f:
+        if layer not in f["layers"]:
+            raise ValueError(f"layer '{layer}' not found; available: {list(f['layers'].keys())}")
+        return ad.AnnData(X=read_elem(f["layers"][layer]), obs=read_elem(f["obs"]), var=read_elem(f["var"]))
+
+
 def load(
     h5ad: str | None = None,
     matrix: str | None = None,
@@ -69,11 +84,11 @@ def load(
     metadata: str | None = None,
     layer: str | None = None,
 ) -> ad.AnnData:
-    if h5ad:
+    if h5ad and layer:
+        adata = read_h5ad_layer(h5ad, layer)
+    elif h5ad:
         adata = ad.read_h5ad(h5ad)
-        if layer:
-            adata.X = adata.layers[layer]
-        elif adata.raw is not None and not _looks_like_counts(adata.X):
+        if adata.raw is not None and not _looks_like_counts(adata.X):
             # Many published objects keep log-normalised data in X and counts in .raw
             adata = ad.AnnData(X=adata.raw.X, obs=adata.obs, var=adata.raw.var)
     elif matrix and barcodes and features:
