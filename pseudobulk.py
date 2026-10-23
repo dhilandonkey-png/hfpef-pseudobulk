@@ -97,7 +97,11 @@ def main(argv: list[str] | None = None) -> None:
     donor_meta = adata.obs[[args.donor_col, args.group_col, *args.covariates]].astype(str).drop_duplicates()
     if donor_meta[args.donor_col].duplicated().any():
         bad = donor_meta[donor_meta[args.donor_col].duplicated(keep=False)]
-        raise SystemExit(f"group/covariates vary within a donor:\n{bad}")
+        raise SystemExit(
+            f"group/covariates vary within a donor:\n{bad}\n"
+            f"Is --donor-col '{args.donor_col}' really one patient? Pool/library columns "
+            "(e.g. SCP3342's biosample_id = pool2..pool10) mix HFpEF and control patients."
+        )
 
     out = Path(args.out)
     out.mkdir(parents=True, exist_ok=True)

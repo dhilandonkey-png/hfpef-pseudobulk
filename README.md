@@ -41,8 +41,17 @@ Rules taken from the paper:
 ## 1. Download the data
 
 1. Sign in at the SCP3342 link above (the portal requires a Google login).
-2. Open **Download** and get the expression matrix (`.mtx` + barcodes + features, or `.h5ad`) and the metadata file.
-3. Open the metadata and find the column names for **patient/donor**, **cell type**, **disease group**, **sex** and **pool**. Use these names in the commands below.
+2. Open **Download** and get the **"snRNA-seq anndata file, h5ad"** (48,866 nuclei x 36,601 genes).
+3. List its columns and check it holds raw counts:
+   ```bash
+   python -I inspect_h5ad.py SCP3342.h5ad
+   ```
+   Pick the columns for **patient**, **cell type**, **disease group** and **sex**.
+
+> **`biosample_id` is the pool, not the patient.** On SCP3342 it takes 8 values
+> (pool2, 3, 4, 5, 7, 8, 9, 10; pools 1, 6 and 6b failed QC in the paper). Each pool mixes
+> 3 HFpEF and 3 control patients, so use it as the `pool` **covariate**, never as `--donor-col`.
+> The patient column comes from souporcell demultiplexing and should have 43 values.
 
 Make sure the matrix holds **raw counts**. If the portal only provides normalised values, the script stops and tells you so.
 
