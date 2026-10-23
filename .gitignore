@@ -1,0 +1,5 @@
+__pycache__/
+*.h5ad
+results/
+synth_res/
+.DS_Store

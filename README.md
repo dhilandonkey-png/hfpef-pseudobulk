@@ -58,6 +58,8 @@ Make sure the matrix holds **raw counts**. If the portal only provides normalise
 ## 2. Install
 
 ```bash
+git clone https://github.com/dhilandonkey-png/hfpef-pseudobulk.git
+cd hfpef-pseudobulk
 pip install -r requirements.txt
 # for the paper's exact DE method (R):
 #   install.packages("BiocManager"); BiocManager::install(c("limma", "edgeR"))
