@@ -82,8 +82,14 @@ python de_pydeseq2.py results_cellbender --group-col original_disease \
 Rscript limma_voom.R results_cellbender original_disease hfpef control sex biosample_id
 ```
 
-Repeat with `--layer raw_count_cellranger --out results_cellranger` to reproduce the paper's
-requirement that a gene be significant in the same direction in both matrices.
+Repeat with `--layer raw_count_cellranger --out results_cellranger`, then keep only genes
+significant in the same direction in both matrices (the paper's rule) and draw volcano plots:
+
+```bash
+python concordance.py results_cellbender/de_pydeseq2 results_cellranger/de_pydeseq2 --out final
+```
+
+`final/` gets `<celltype>_concordant_de.csv`, `<celltype>_volcano.png` and `summary.csv`.
 
 ## 2. Install
 
