@@ -25,10 +25,9 @@ TEXT, MUTED, SURFACE = "#0b0b0b", "#52514e", "#fcfcfb"
 
 
 def concordant(cb: pd.DataFrame, cr: pd.DataFrame, alpha: float) -> pd.DataFrame:
-    df = cb[["baseMean", "log2FoldChange", "pvalue", "padj"]].join(
-        cr[["log2FoldChange", "padj"]], how="inner", rsuffix="_cellranger"
-    )
-    df = df.rename(columns={"log2FoldChange": "log2FC", "padj": "padj", "log2FoldChange_cellranger": "log2FC_cellranger"})
+    cb = cb[["baseMean", "log2FoldChange", "pvalue", "padj"]].rename(columns={"log2FoldChange": "log2FC"})
+    cr = cr[["log2FoldChange", "padj"]].rename(columns={"log2FoldChange": "log2FC_cellranger", "padj": "padj_cellranger"})
+    df = cb.join(cr, how="inner")
     df["significant"] = (
         (df["padj"] < alpha)
         & (df["padj_cellranger"] < alpha)
@@ -62,13 +61,14 @@ def volcano(df: pd.DataFrame, title: str, path: Path, n_labels: int = 10) -> Non
     ax.axvline(0, color=MUTED, lw=0.5)
     ax.set_xlabel("log2 fold change (HFpEF vs control, CellBender)", color=TEXT, fontsize=8)
     ax.set_ylabel("-log10 P (CellBender)", color=TEXT, fontsize=8)
-    ax.set_title(title, color=TEXT, fontsize=10, loc="left")
+    ax.set_title(title, color=TEXT, fontsize=10, loc="left", pad=22)
     ax.tick_params(colors=MUTED, labelsize=7)
     for side in ("top", "right"):
         ax.spines[side].set_visible(False)
     for side in ("left", "bottom"):
         ax.spines[side].set_color(MUTED)
-    ax.legend(fontsize=7, frameon=False, loc="upper left")
+    # legend above the plot so it never covers the most significant genes
+    ax.legend(fontsize=7, frameon=False, loc="lower left", bbox_to_anchor=(0, 1.02), ncol=3, borderaxespad=0)
     fig.tight_layout()
     fig.savefig(path, facecolor=SURFACE)
     plt.close(fig)
